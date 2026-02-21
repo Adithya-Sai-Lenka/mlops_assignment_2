@@ -1,0 +1,56 @@
+# Docker Swarm stack deployment configuration
+
+# Deploy with: docker stack deploy -c docker-stack.yml multimodal-api
+# Remove with: docker stack rm multimodal-api
+
+version: '3.8'
+
+services:
+  api:
+    # Image name 
+    # Build first: docker build -t multimodal-api:latest .
+    image: multimodal-api:latest
+    
+    # Replicas: 4 containers for load balancing 
+    # Swarm will automatically distribute these across available nodes
+    deploy:
+      replicas: 4
+      
+      # Restart policy: always restart failed containers
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      
+      # Update config: rolling updates with zero downtime
+      update_config:
+        parallelism: 1          # Update 1 replica at a time
+        delay: 10s              # Wait 10s between updates
+        failure_action: rollback
+    
+    # Port mapping 
+    # Any request to ANY node on port 8000 will be distributed across all replicas
+    ports:
+      - target: 8000      # Container port
+        published: 8000   # Host port
+        mode: ingress     # Swarm routing mesh (enables load balancing)
+    
+    # Environment variables: API keys 
+    # These are injected into every container at runtime (not baked into image)
+     # Before deploying, export them in your terminal
+    environment:
+      - DEEPL_API_KEY=${DEEPL_API_KEY}
+      - FALAI_API_KEY=${FALAI_API_KEY}
+    
+    # Networking 
+    # Overlay network allows containers on different nodes to communicate
+    networks:
+      - multimodal-net
+
+# Network definition 
+# Overlay network: spans multiple Docker hosts in the Swarm
+# Attachable: allows standalone containers to connect (useful for debugging)
+networks:
+  multimodal-net:
+    driver: overlay
+    attachable: true

@@ -1,0 +1,37 @@
+# .dockerignore — keeps the Docker build context lean
+# Files listed here are never sent to the Docker daemon
+
+# API keys — 
+.env
+.env.*
+*.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Git
+.git/
+.gitignore
+
+# Tests and scripts
+tester.py
+
+# Docs
+*.md
+CONFLICT.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
